@@ -524,10 +524,13 @@ run-only:
 		$(QEMU_XEN) \
 		$(QEMU_EXTRA_ARGS)
 
+.PHONY: reset-rootfs
+reset-rootfs:
+	rm -f $(BINARIES_PATH)/rootfs.ext2
 
 .PHONY: run-tmux
 run-tmux:
-	ln -sf $(ROOT)/out-br/images/rootfs.cpio.gz $(BINARIES_PATH)/
+	[ -f $(BINARIES_PATH)/rootfs.ext2 ] || ( cp /optee/alarm-rootfs/rootfs.ext2 $(BINARIES_PATH)/ && chattr +C $(BINARIES_PATH)/rootfs.ext2 )
 	$(call run-help)
 	tmux kill-session -t optee || true
 	tmux new-session -d -s optee &
@@ -546,9 +549,9 @@ run-tmux:
 		-d unimp -semihosting-config enable=on,target=native \
 		-m $(QEMU_MEM) \
 		-bios bl1.bin \
-		-initrd rootfs.cpio.gz \
+		-drive file=rootfs.ext2,format=raw,if=virtio \
 		-kernel Image -no-acpi \
-		-append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2 $(QEMU_KERNEL_BOOTARGS)' \
+		-append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda rw $(QEMU_KERNEL_BOOTARGS)' \
 		$(QEMU_XEN) \
 		$(QEMU_EXTRA_ARGS); \
 		" C-m
