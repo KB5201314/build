@@ -1,0 +1,17 @@
+[Unit]
+Description=OPTEE's tee-supplicant daemon
+
+[Service]
+Type=simple
+User=root
+ExecStartPre=sh -c 'chown root:tee /dev/teepriv0 && chmod 0660 /dev/teepriv0 && \
+		chown root:teeclnt /dev/tee0 && chmod 0660 /dev/tee0'
+ExecStartPre=sh -c '[ ! -e /dev/ion ] || { chown root:ion /dev/ion && chmod 0660 /dev/ion ; }'
+ExecStartPre=sh -c 'mkdir -p /data/tee && chown -R tee:tee /data/tee && chmod 0770 /data/tee'
+ExecStart=su tee -c '/usr/sbin/tee-supplicant -d /dev/teepriv0'
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
