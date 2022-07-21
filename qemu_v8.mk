@@ -452,6 +452,43 @@ run-only:
 		$(QEMU_XEN) \
 		$(QEMU_EXTRA_ARGS)
 
+
+.PHONY: run-tmux
+run-tmux:
+	ln -sf $(ROOT)/out-br/images/rootfs.cpio.gz $(BINARIES_PATH)/
+	$(call run-help)
+	tmux kill-session -t optee || true
+	tmux new-session -d -s optee &
+	tmux new-window -t optee:1
+	tmux new-window -t optee:2
+
+	tmux send-keys -t optee:0 "set +o history; clear; printf '=== Normal World ===\n\n'; $(BUILD_PATH)/soc_term.py 54320" C-m
+	tmux send-keys -t optee:1 "set +o history; clear; printf '=== Secure World ===\n\n'; $(BUILD_PATH)/soc_term.py 54321" C-m
+	
+	tmux send-keys -t optee:2 "set +o history; clear; cd $(BINARIES_PATH) && $(QEMU_BUILD)/aarch64-softmmu/qemu-system-aarch64 \
+		-nographic \
+		-serial tcp:localhost:54320 -serial tcp:localhost:54321 \
+		-smp $(QEMU_SMP) \
+		-s -S -machine virt,secure=on,gic-version=$(QEMU_GIC_VERSION),virtualization=$(QEMU_VIRT) \
+		-cpu $(QEMU_CPU) \
+		-d unimp -semihosting-config enable=on,target=native \
+		-m $(QEMU_MEM) \
+		-bios bl1.bin \
+		-initrd rootfs.cpio.gz \
+		-kernel Image -no-acpi \
+		-append 'console=ttyAMA0,38400 keep_bootcon root=/dev/vda2 $(QEMU_KERNEL_BOOTARGS)' \
+		$(QEMU_XEN) \
+		$(QEMU_EXTRA_ARGS); \
+		" C-m
+
+	tmux join-pane -s optee:1 -t optee:0
+	tmux join-pane -s optee:2 -t optee:0
+
+	tmux select-pane -t optee:0.2
+
+	@echo '>>>> Now run "tmux attach-session -t optee" to attach to tmux session <<<<'
+	
+
 ifneq ($(filter check check-rust,$(MAKECMDGOALS)),)
 CHECK_DEPS := all
 endif
