@@ -62,6 +62,10 @@ CCACHE ?= $(shell which ccache) # Don't remove this comment (space is needed)
 #    will mount the host directory /tmp/qemu-data-tee as /data/tee
 #    in QEMU, thus creating persistent secure storage.
 
+# imlk:
+QEMU_VIRTFS_AUTOMOUNT = y
+QEMU_PSS_AUTOMOUNT = y
+
 ifeq ($(QEMU_VIRTFS_AUTOMOUNT),y)
 $(call force,QEMU_VIRTFS_ENABLE,y,required by QEMU_VIRTFS_AUTOMOUNT)
 endif
