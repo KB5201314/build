@@ -424,8 +424,8 @@ QEMU_XEN	?= -drive if=none,file=$(XEN_EXT4),format=raw,id=hd1 \
 		   -device virtio-blk-device,drive=hd1
 else
 QEMU_CPU	?= max,sve=off
-QEMU_SMP 	?= 2
-QEMU_MEM 	?= 1057
+QEMU_SMP 	?= 4	# cannot be more than 4 vcpus
+QEMU_MEM 	?= 2048 # cannot be more than 2048 MB
 QEMU_VIRT	= false
 endif
 
