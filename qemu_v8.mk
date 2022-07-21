@@ -489,8 +489,8 @@ else
 QEMU_SME	= off
 endif
 QEMU_CPU	?= max,sme=$(QEMU_SME),pauth-impdef=on
-QEMU_SMP 	?= 2
-QEMU_MEM 	?= 1057
+QEMU_SMP 	?= 4	# cannot be more than 4 vcpus
+QEMU_MEM 	?= 2048 # cannot be more than 2048 MB
 endif
 
 ifeq ($(MEMTAG),y)
