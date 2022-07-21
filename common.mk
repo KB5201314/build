@@ -327,6 +327,31 @@ BR2_PACKAGE_OPENSC ?= y
 # Embed keyutils for trusted-keys
 BR2_PACKAGE_KEYUTILS ?= y
 
+# imlk:
+BR2_PACKAGE_PYTHON3 ?= y
+BR2_PACKAGE_PYTHON_PIP ?= y
+BR2_PACKAGE_HOST_PYTHON3 ?= y
+BR2_PACKAGE_HTOP ?= y
+BR2_PACKAGE_TMUX ?= y
+BR2_TARGET_ROOTFS_EXT2 ?= y
+BR2_TARGET_ROOTFS_EXT2_4 ?= y
+BR2_PACKAGE_BUSYBOX_SHOW_OTHERS ?= y
+BR2_PACKAGE_BASH ?= y
+BR2_PACKAGE_BASH_COMPLETION ?= y
+BR2_SYSTEM_BIN_SH_BASH ?= y
+BR2_PACKAGE_LIBCURL_CURL ?= y
+BR2_PACKAGE_LIBCURL ?= y
+BR2_PACKAGE_WGET ?= y
+BR2_PACKAGE_CA_CERTIFICATES ?= y
+BR2_PACKAGE_GIT ?= y
+BR2_TARGET_ROOTFS_EXT2_SIZE ?= 512M
+BR2_PACKAGE_VIM ?= y
+BR2_PACKAGE_TAR ?= y
+BR2_PACKAGE_CLANG ?= y
+BR2_PACKAGE_DOCKER_CLI ?= y
+BR2_PACKAGE_DOCKER_ENGINE ?= y
+
+
 # All BR2_* variables from the makefile or the environment are appended to
 # ../out-br/extra.conf. All values are quoted "..." except y and n.
 double-quote = "#" # This really sets the variable to " and avoids upsetting vim's syntax highlighting
