@@ -533,7 +533,7 @@ run-tmux:
 	[ -f $(BINARIES_PATH)/rootfs.ext2 ] || ( cp /optee/alarm-rootfs/rootfs.ext2 $(BINARIES_PATH)/ && chattr +C $(BINARIES_PATH)/rootfs.ext2 )
 	$(call run-help)
 	tmux kill-session -t optee || true
-	tmux new-session -d -s optee &
+	tmux new -d -s optee
 	tmux new-window -t optee:1
 	tmux new-window -t optee:2
 
