@@ -19,8 +19,10 @@ UBOOT_PATH		?= $(ROOT)/u-boot
 UBOOT_BIN		?= $(UBOOT_PATH)/u-boot.bin
 ROOT_IMG 		?= $(ROOT)/out-br/images/rootfs.ext2
 BOOT_IMG		?= $(ROOT)/out/boot.ext2
+TRUST_IMG		?= $(ROOT)/out/trust.img
 RKDEVELOPTOOL_PATH	?= $(ROOT)/rkdeveloptool
 RKDEVELOPTOOL_BIN	?= $(RKDEVELOPTOOL_PATH)/rkdeveloptool
+RKSDK_PATH		?= /root/rk3399-linux-sdk
 
 LINUX_MODULES ?= n
 
@@ -86,9 +88,7 @@ clean: tfa-clean
 ################################################################################
 # U-Boot
 ################################################################################
-# TODO: fix this
-UBOOT_DEFCONFIG_FILES := $(UBOOT_PATH)/configs/rock-pi-4-rk3399_defconfig \
-			 $(ROOT)/build/kconfigs/u-boot_rockpi4.conf
+UBOOT_DEFCONFIG_FILES := $(UBOOT_PATH)/configs/evb-rk3399_defconfig
 
 UBOOT_FLAGS ?= CROSS_COMPILE=$(CROSS_COMPILE_NS_KERNEL) \
 	       CC=$(CROSS_COMPILE_NS_KERNEL)gcc \
@@ -163,6 +163,26 @@ optee-os-clean: optee-os-clean-common
 
 clean: optee-os-clean
 
+
+################################################################################
+# Trust partition (trust.img)
+################################################################################
+
+.PHONY: trust-img
+trust-img: optee-os tfa
+	mkdir -p $(BINARIES_PATH)
+	rm -f $(TRUST_IMG)
+	rm -rf $(BINARIES_PATH)/trust
+	mkdir -p $(BINARIES_PATH)/trust
+
+	BL31=`realpath $(TF_A_OUT)/bl31/bl31.elf` BL32=`realpath $(OPTEE_OS_PAGER_V2_BIN)` OUTPUT=`realpath $(BINARIES_PATH)/trust.img` envsubst <$(ROOT)/build/king3399/RK3399TRUST-template.ini > $(BINARIES_PATH)/trust/RK3399TRUST.ini
+#	BL31=/root/arm-trusted-firmware/build/rk3399/release/bl31/bl31.elf BL32=`realpath $(OPTEE_OS_PAGER_V2_BIN)` OUTPUT=`realpath $(BINARIES_PATH)/trust.img` envsubst <$(ROOT)/build/king3399/RK3399TRUST-template.ini > $(BINARIES_PATH)/trust/RK3399TRUST.ini
+#	BL31=`realpath ~/rk3399-linux-sdk/rkbin/bin/rk33/rk3399_bl31_v1.36.elf` BL32=`realpath $(OPTEE_OS_PAGER_V2_BIN)` OUTPUT=`realpath $(BINARIES_PATH)/trust.img` envsubst <$(ROOT)/build/king3399/RK3399TRUST-template.ini > $(BINARIES_PATH)/trust/RK3399TRUST.ini
+#	BL31=`realpath ~/rk3399-linux-sdk/rkbin/bin/rk33/rk3399_bl31_v1.34.elf` BL32=`realpath ~/rk3399-linux-sdk/rkbin/bin/rk33/rk3399_bl32_v1.16.bin` OUTPUT=`realpath $(BINARIES_PATH)/trust.img` envsubst <$(ROOT)/build/king3399/RK3399TRUST-template.ini > $(BINARIES_PATH)/trust/RK3399TRUST.ini
+#	BL31=`realpath ~/rk3399-linux-sdk/rkbin/bin/rk33/rk3399_bl31_v1.36.elf` BL32=`realpath ~/rk3399-linux-sdk/rkbin/bin/rk33/rk3399_bl32_v2.10.bin` OUTPUT=`realpath $(BINARIES_PATH)/trust.img` envsubst <$(ROOT)/build/king3399/RK3399TRUST-template.ini > $(BINARIES_PATH)/trust/RK3399TRUST.ini
+	$(RKSDK_PATH)/u-boot/tools/trust_merger $(BINARIES_PATH)/trust/RK3399TRUST.ini
+
+
 ################################################################################
 # Boot partition (boot.ext2)
 ################################################################################
@@ -177,7 +197,7 @@ $(BOOT_IMG): $(LINUX_PATH)/arch/arm64/boot/Image
 	cp $(LINUX_PATH)/arch/arm64/boot/Image $(BINARIES_PATH)/boot/Image
 	cp $(LINUX_PATH)/arch/arm64/boot/dts/rockchip/rk3399-king3399.dtb $(BINARIES_PATH)/boot/rk3399.dtb
 	mkdir $(BINARIES_PATH)/boot/extlinux
-	printf "label rockchip-kernel-4.4\n    kernel /Image\n    fdt /rk3399.dtb\n    append earlycon=uart8250,mmio32,0xff1a0000 console=ttyS2,115200 root=PARTLABEL=rootfs rw rootwait rootfstype=ext4 init=/sbin/init\n" > $(BINARIES_PATH)/boot/extlinux/extlinux.conf
+	printf "label mainline-kernel-5.19\n    kernel /Image\n    fdt /rk3399.dtb\n    append earlycon=uart8250,mmio32,0xff1a0000 console=ttyS2,1500000 root=PARTLABEL=rootfs rw rootwait rootfstype=ext4 init=/sbin/init\n" > $(BINARIES_PATH)/boot/extlinux/extlinux.conf
 
 # TODO: fix this
 ifeq ($(LINUX_MODULES),y)
